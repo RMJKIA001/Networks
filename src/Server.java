@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -12,7 +14,7 @@ import java.util.Date;
  */
 public class Server{
     // Unique ID for each connection
-    private static int ID;
+    private static int uniqueID;
     // List of connected clients
     private ArrayList<ClientThread> clients;
     // So that we can display dates with our messages
@@ -130,6 +132,100 @@ public class Server{
         }
         server.start();
 
+    }
+
+    // Inner class for the thread. Easier this way than making a server object.
+    public class ClientThread extends Thread {
+
+        Socket socket;
+        ObjectInputStream sInput;
+        ObjectOutputStream sOutput;
+        int id;
+        String username;
+        Message msg;
+        String date;
+
+        // Thread constructor
+        public ClientThread(Socket socket){
+            id = uniqueID++;
+            this.socket = socket;
+
+            try {
+                sInput = new ObjectInputStream(socket.getInputStream());
+                sOutput = new ObjectOutputStream((socket.getOutputStream()));
+                username = (String) sInput.readObject();
+                display(username + "just connected.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            date = new Date().toString() + "\n";
+        }
+        // Loops until LOGOUT
+        public void run(){
+            boolean on = true;
+            while(on){
+                try {
+                    msg = (Message) sInput.readObject();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    break;
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    break;
+                }
+                String message = msg.getMessage();
+
+                switch (msg.getType()){
+                    case Message.MESSAGE:
+                        broadcast(username + ": " + message);
+                        break;
+                    case Message.LOGOUT:
+                        display(username + " disconnected from server");
+                        on = false;
+                        break;
+                    case Message.PICTURE:
+                        // code for Kiara
+                    case Message.WHOISIN:
+                        writeMsg("List of the users currently on the server at " +
+                        sdf.format(new Date()) + "\n");
+                        for (int i=0; i<clients.size();++i){
+                            ClientThread ct = clients.get(i);
+                            writeMsg((i+1) + ". " + username + " since " + ct.date);
+                        }
+                        break;
+                }
+            }
+            // If here then client has logged out. So will remove client.
+            remove(id);
+            close();
+        }
+        private void close(){
+            try {
+                sOutput.close();
+                sInput.close();
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        private boolean writeMsg(String msg){
+            if (!socket.isConnected()){
+                close();
+                return false;
+            }
+            // write message to the stream
+            try {
+                sOutput.writeObject(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error sending message to " + username);
+            }
+            return true;
+        }
     }
 
     //FIRST TRY:
