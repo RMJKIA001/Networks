@@ -54,7 +54,7 @@ public class Server{
                 }
 
                 // make a thread of the connection
-                ClientThread t = new ClientThread(socket);
+                ClientThread t = new ClientThread(socket); 
                 // save the thread in the client list
                 clients.add(t);
                 //System.out.println("DEBUG: Client thread created");
@@ -63,7 +63,7 @@ public class Server{
             }
             serverSocket.close();
             // possibly add try catches here so that error catching is easier
-            for (int i=0; i<clients.size();++i){
+            for (int i=0; i<clients.size();i++){//why do you use ++i
                 ClientThread tc = clients.get(i);
                 tc.sInput.close();
                 tc.sOutput.close();
@@ -99,7 +99,7 @@ public class Server{
     }
     // used for when the client logs off using LOGOUT message
     public synchronized void remove(int id){
-        for (int i=0; i<clients.size();++i){
+        for (int i=0; i<clients.size();i++){
             ClientThread ct = clients.get(i);
             if (ct.id == id){
                 clients.remove(i);
@@ -193,9 +193,9 @@ public class Server{
                     case Message.WHOISIN:
                         writeMsg("List of the users currently on the server at " +
                         sdf.format(new Date()) + "\n");
-                        for (int i=0; i<clients.size();++i){
+                        for (int i=0; i<clients.size();i++){
                             ClientThread ct = clients.get(i);
-                            writeMsg((i+1) + ". " + username + " since " + ct.date);
+                            writeMsg((i+1) + ". " + ct.username + " since " + ct.date);
                         }
                         break;
                 }
