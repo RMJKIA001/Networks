@@ -36,11 +36,14 @@ public class ChatAppClient {
         }
         String msg = "Connection accepted " + socket.getInetAddress() + ": " + socket.getPort();
         display(msg);
-
+        msg = " - Use command 'WHOISIN' to find what other users are connected. \n - Use command 'LOGOUT' to logout of chat server";
+        display(msg);
         // Create data streams
         try {
+            System.out.println("DEBUG: Creating data streams");
             sInput = new ObjectInputStream(socket.getInputStream());
             sOutput = new ObjectOutputStream((socket.getOutputStream()));
+           // System.out.println("DEBUG: Data streams created");
         } catch (IOException e) {
             display("Exception in creating new streams");
             e.printStackTrace();
@@ -49,10 +52,12 @@ public class ChatAppClient {
 
         // Create thread to listen from server
         new ServerListener().start();
+        System.out.println("ServerListener started");
 
         // Send username to server as String
         try {
             sOutput.writeObject(username);
+            System.out.println("Username sent to server");
         } catch (IOException e) {
             display("Exception doing login");
             e.printStackTrace();
@@ -69,12 +74,17 @@ public class ChatAppClient {
     }
     public void disconnect(){
         try {
-            sInput.close();
-            sOutput.close();
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            if(sInput != null) sInput.close();
         }
+        catch(Exception e) {} // not much else I can do
+        try {
+            if(sOutput != null) sOutput.close();
+        }
+        catch(Exception e) {} // not much else I can do
+        try{
+            if(socket != null) socket.close();
+        }
+        catch(Exception e) {} // not much else I can do
     }
     public void sendMessage(Message msg){
         try {
@@ -107,25 +117,26 @@ public class ChatAppClient {
         }
         // create the Client object
         ChatAppClient client = new ChatAppClient(serverAddress,portNumber,userName);
-
+       // System.out.println("DEBUG: Client created");
         // try to connect to server
         if (!client.start()){
+           // System.out.println("DEBUG: Client did not start");
             return;
         }
 
         // get messages from the client
         Scanner scanner = new Scanner(System.in);
-
+       // System.out.println("DEBUG: in scanner");
         //infinite loop getting messages
         while (true){
-            System.out.println("> ");
+            System.out.print("> ");
             String msg = scanner.nextLine();
             // sends message to server that client wants to logout
             if (msg.equalsIgnoreCase("LOGOUT")){
                 client.sendMessage(new Message(Message.LOGOUT, ""));
                 break;
             } else if (msg.equalsIgnoreCase("PICTURE")){
-                // code here
+                //TODO: send warning and picture to server
             } else if (msg.equalsIgnoreCase(("WHOISIN"))){
                 client.sendMessage(new Message(Message.WHOISIN, ""));
             } else {
@@ -137,6 +148,7 @@ public class ChatAppClient {
 
 
 
+    // Inner class that listens to new messages from the server
     class ServerListener extends Thread{
 
         public void run(){
@@ -145,7 +157,7 @@ public class ChatAppClient {
                 try {
                     String msg = (String) sInput.readObject();
                     System.out.println(msg);
-                    System.out.println("> ");
+                    System.out.print("> ");
                 } catch (IOException e) {
                     display("Connection to server is closed");
                     e.printStackTrace();

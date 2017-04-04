@@ -42,11 +42,14 @@ public class Server{
                 // Show that server is waiting
                 display("Server is waiting for clients on port " + port + ".");
 
+
                 // Accept connections
                 Socket socket = serverSocket.accept();
+               // System.out.println("DEBUG: Connection accepted");
 
                 // Check if i should stop
                 if (!on){
+                    //System.out.println("DEBUG: Server stopped");
                     break;
                 }
 
@@ -54,27 +57,23 @@ public class Server{
                 ClientThread t = new ClientThread(socket);
                 // save the thread in the client list
                 clients.add(t);
+                //System.out.println("DEBUG: Client thread created");
                 t.start();
+               // System.out.println("DEBUG: Client connection started");
             }
             serverSocket.close();
             // possibly add try catches here so that error catching is easier
             for (int i=0; i<clients.size();++i){
                 ClientThread tc = clients.get(i);
-                //close stuff here
+                tc.sInput.close();
+                tc.sOutput.close();
+                tc.socket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void stop(){
-        on = false;
-        // doing this to move along in the infinite loop
-        try {
-            new Socket("localhost", port);
-        }catch (Exception e){
 
-        }
-    }
     // Dispays event (not a message) to the console
     public void display(String msg){
         String time = sdf.format(new Date()) + " " + msg;
@@ -131,6 +130,7 @@ public class Server{
             e.printStackTrace();
         }
         server.start();
+       // System.out.println("DEBUG: Server started");
 
     }
 
@@ -151,12 +151,15 @@ public class Server{
             this.socket = socket;
 
             try {
-                sInput = new ObjectInputStream(socket.getInputStream());
+                //System.out.println("DEBUG: Creating data streams");
                 sOutput = new ObjectOutputStream((socket.getOutputStream()));
+                sInput = new ObjectInputStream(socket.getInputStream());
+                //System.out.println("DEBUG: Data stream created");
                 username = (String) sInput.readObject();
-                display(username + "just connected.");
+                display(username + " just connected.");
             } catch (IOException e) {
                 e.printStackTrace();
+                display("Exception in creating data streams " + e);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -186,7 +189,7 @@ public class Server{
                         on = false;
                         break;
                     case Message.PICTURE:
-                        // code for Kiara
+                        //TODO: how to save and display picture
                     case Message.WHOISIN:
                         writeMsg("List of the users currently on the server at " +
                         sdf.format(new Date()) + "\n");
