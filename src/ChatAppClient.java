@@ -52,12 +52,12 @@ public class ChatAppClient {
 
         // Create thread to listen from server
         new ServerListener().start();
-        System.out.println("ServerListener started");
+        //System.out.println("DEBUG: ServerListener started");
 
         // Send username to server as String
         try {
             sOutput.writeObject(username);
-            System.out.println("Username sent to server");
+            //   System.out.println("DEBUG: Username sent to server");
         } catch (IOException e) {
             display("Exception doing login");
             e.printStackTrace();
@@ -139,7 +139,11 @@ public class ChatAppClient {
                 //TODO: send warning and picture to server
             } else if (msg.equalsIgnoreCase(("WHOISIN"))){
                 client.sendMessage(new Message(Message.WHOISIN, ""));
-            } else {
+            } else if (msg.startsWith(("KICK"))){
+                String kicked = msg.substring(5);
+                System.out.println("DEBUG: user to be kicked = " + kicked);
+                client.sendMessage(new Message(Message.KICK, kicked));
+            } else{
                 client.sendMessage(new Message(Message.MESSAGE, msg));
             }
         }

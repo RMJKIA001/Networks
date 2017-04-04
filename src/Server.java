@@ -156,7 +156,8 @@ public class Server{
                 sInput = new ObjectInputStream(socket.getInputStream());
                 //System.out.println("DEBUG: Data stream created");
                 username = (String) sInput.readObject();
-                display(username + " just connected.");
+                display(username + " just connected."); // Check if this doubles up
+                broadcast(username + " just connected.");
             } catch (IOException e) {
                 e.printStackTrace();
                 display("Exception in creating data streams " + e);
@@ -185,7 +186,8 @@ public class Server{
                         broadcast(username + ": " + message);
                         break;
                     case Message.LOGOUT:
-                        display(username + " disconnected from server");
+                        display(username + " disconnected from server"); // don't know yet if this doubles up
+                        broadcast(username + " disconnected from server");
                         on = false;
                         break;
                     case Message.PICTURE:
@@ -196,6 +198,17 @@ public class Server{
                         for (int i=0; i<clients.size();++i){
                             ClientThread ct = clients.get(i);
                             writeMsg((i+1) + ". " + username + " since " + ct.date);
+                        }
+                        break;
+                    case Message.KICK:
+                        //TODO: KICK a client off
+                        for (int i=0; i<clients.size();i++){
+                            if (message.equalsIgnoreCase(clients.get(i).username)){
+                                broadcast(username + " has kicked " + message);
+                                remove(clients.get(i).id);
+                            } else {
+                                writeMsg("User cannot be found");
+                            }
                         }
                         break;
                 }
