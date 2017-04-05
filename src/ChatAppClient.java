@@ -16,10 +16,10 @@ public class ChatAppClient {
     private String server, username;
     private int port;
     private ServerListener sl;
-
     // Constructor for client
     public ChatAppClient(String server, int port, String username){
         this.server = server;
+      
         this.port = port;
         this.username = username;
     }
@@ -40,7 +40,6 @@ public class ChatAppClient {
         display(msg);
         // Create data streams
         try {
-            System.out.println("DEBUG: Creating data streams");
             sInput = new ObjectInputStream(socket.getInputStream());
             sOutput = new ObjectOutputStream((socket.getOutputStream()));
            // System.out.println("DEBUG: Data streams created");
@@ -53,12 +52,11 @@ public class ChatAppClient {
         // Create thread to listen from server
         sl = new ServerListener();
         sl.start();
-        System.out.println("ServerListener started");
 
         // Send username to server as String
         try {
             sOutput.writeObject(username);
-            System.out.println("Username sent to server");
+            System.out.println("Welcome to the server");
         } catch (IOException e) {
             display("Exception doing login");
             e.printStackTrace();
@@ -169,6 +167,7 @@ public class ChatAppClient {
                 } catch (IOException e) {
                     display("Connection to server is closed");
                     e.printStackTrace();
+                    t=false;
                 } catch (ClassNotFoundException e) {
                     //display("I am the issue");
                     e.printStackTrace();

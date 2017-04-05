@@ -47,27 +47,22 @@ public class Server{
 
             //infinite loop to check for connections
             while(on){
+                 // Check if i should stop
+                if (!on){ break; }    
+                
                 // Show that server is waiting
                 display("Server is waiting for clients on port " + port + ".");
+               
                 // Accept connections
                 Socket socket = serverSocket.accept();
-               // System.out.println("DEBUG: Connection accepted");
-
-                // Check if i should stop
-                if (!on){
-                    //System.out.println("DEBUG: Server stopped");
-                    break;
-                }
-
+               
                 // make a thread of the connection
                 ClientThread t = new ClientThread(socket); 
                 // save the thread in the client list
                 clients.add(t);
-                //System.out.println("DEBUG: Client thread created");
                 t.start();
-               // System.out.println("DEBUG: Client connection started");
             }
-            serverSocket.close();
+            
             // possibly add try catches here so that error catching is easier
             for (int i=0; i<clients.size();i++){//why do you use ++i
                 ClientThread tc = clients.get(i);
@@ -103,9 +98,25 @@ public class Server{
             }
         }
     }
+    private synchronized void broadcastFrom (String message,String from){
+        // Formats and prints message to console
+        String bcmessage = sdf.format(new Date()) + " " + message + "\n";
+        System.out.println(bcmessage);
+
+        // Sends the message to the clients
+        // In reverse order in case we need to remove someone
+        for (int i=0; i<clients.size();i++){
+            ClientThread ct = clients.get(i);
+            if (!(ct.username.equals(from))){
+                ct.writeMsg(bcmessage);
+                display(ct.username + " client disconnected");
+            }
+        }
+    }
+
     // used for when the client logs off using LOGOUT message
     public synchronized void remove(int id){
-    //System.out.println("Trying ");
+    
         for (int i=0; i<clients.size();i++){
             ClientThread ct = clients.get(i);
             if (ct.id == id){
@@ -116,9 +127,12 @@ public class Server{
         if(clients.size()==0)
         {
           System.out.println("No more Clients");
-          System.exit(0);
-          //try{serverSocket.close();}
-          //catch(Exception e){System.out.println("There is an error in your ways");}
+          try{
+          on=false;
+          serverSocket.close();
+           System.exit(0);
+          }catch(Exception e){System.out.println("Oh No");}
+         
         }
     }
     public static void main(String args[]){
@@ -145,7 +159,6 @@ public class Server{
             e.printStackTrace();
         }
         server.start();
-       // System.out.println("DEBUG: Server started");
 
     }
 
@@ -171,7 +184,7 @@ public class Server{
                 sInput = new ObjectInputStream(socket.getInputStream());
                 //System.out.println("DEBUG: Data stream created");
                 username = (String) sInput.readObject();
-                display(username + " just connected.");
+                broadcast(username + " just connected.");//everyone should know
             } catch (IOException e) {
                 e.printStackTrace();
                 display("Exception in creating data streams " + e);
@@ -197,10 +210,10 @@ public class Server{
 
                 switch (msg.getType()){
                     case Message.MESSAGE:
-                        broadcast(username + ": " + message);
+                        broadcastFrom(username + ": " + message,username);
                         break;
                     case Message.LOGOUT:
-                        display(username + " disconnected from server");
+                        broadcast(username + " disconnected from server"); //i think everyone needs to know when someone leaves
                         on = false;
                         break;
                     case Message.PICTURE:
@@ -222,7 +235,28 @@ public class Server{
                         if (returnVal == JFileChooser.CANCEL_OPTION) {
                            path = "";
                         }  
-                        display(path); 
+                        //
+                        writeMsg("Send to all? (Y/N)");
+                        Message m=null;
+                        try{  m = (Message)sInput.readObject();}
+                        catch(Exception e){System.out.println("Hey");}
+                        String s = m.getMessage();
+                        if(s.equalsIgnoreCase("Y")){broadcastFrom(username + " wants to send image: " + path.substring(path.lastIndexOf("\\")+1),username);}
+                        else if(s.equalsIgnoreCase("N")){
+                           writeMsg("Enter the username who you want to send it to: ");
+                           Message m2=null;
+                           try{  m2 = (Message)sInput.readObject();}
+                           catch(Exception e){System.out.println("Hey");}
+                           String s2 = m2.getMessage();
+                           for (int i=0; i<clients.size();i++){
+                            ClientThread ct = clients.get(i);
+                            if(ct.username.equals(s2)){
+                            ct.writeMsg(username + "wants to send you the following picture: "+ path.substring(path.lastIndexOf("\\")+1));
+                            }
+                        }
+                        }
+                        else{writeMsg("Cannot understand input. Start process again");}
+                        // display(s + "\n" + path); 
                         break;
                     case Message.WHOISIN:
                         writeMsg("List of the users currently on the server at " +
@@ -265,6 +299,45 @@ public class Server{
         }
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     //FIRST TRY:
 /*
     public void run (){
