@@ -29,6 +29,7 @@ public class Server{
     private int port;
     // decides whether server will still run or not
     private boolean on;
+    
 
     // Constructor for the server
     // Can edit this to include GUI if needed
@@ -37,18 +38,17 @@ public class Server{
         sdf = new SimpleDateFormat("HH:mm:ss");
         clients = new ArrayList<ClientThread>();
     }
+    ServerSocket serverSocket;
     public void start(){
         on = true;
         try {
             // Creates socket used by the server
-            ServerSocket serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(port);
 
             //infinite loop to check for connections
             while(on){
                 // Show that server is waiting
                 display("Server is waiting for clients on port " + port + ".");
-
-
                 // Accept connections
                 Socket socket = serverSocket.accept();
                // System.out.println("DEBUG: Connection accepted");
@@ -105,12 +105,20 @@ public class Server{
     }
     // used for when the client logs off using LOGOUT message
     public synchronized void remove(int id){
+    //System.out.println("Trying ");
         for (int i=0; i<clients.size();i++){
             ClientThread ct = clients.get(i);
             if (ct.id == id){
                 clients.remove(i);
-                return;
+                break;
             }
+        }
+        if(clients.size()==0)
+        {
+          System.out.println("No more Clients");
+          System.exit(0);
+          //try{serverSocket.close();}
+          //catch(Exception e){System.out.println("There is an error in your ways");}
         }
     }
     public static void main(String args[]){
@@ -129,7 +137,8 @@ public class Server{
                 System.out.println("Usage is: > java Server {portNumber}");
                 return;
         }
-        Server server = null;
+       
+        Server server=null;
         try {
             server = new Server(portNumber);
         } catch (IOException e) {
