@@ -7,6 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
+import java.io.IOException;
+import java.awt.Point;
+
 /**
  * Created by Brigitte on 2017/04/02.
  *
@@ -190,6 +196,25 @@ public class Server{
                         break;
                     case Message.PICTURE:
                         //TODO: how to save and display picture
+                        String path="";
+                        // Opens a file chooser window.
+                        JFileChooser chooser = new JFileChooser();
+                        // Creates a filter to allow only PNG and JPG images
+                        FileNameExtensionFilter filter = new FileNameExtensionFilter("JPG and PNG Images", "jpg", "png");
+                        chooser.setFileFilter(filter);//sets the filter
+                        javax.swing.JFrame jf =new javax.swing.JFrame();
+                        jf.setLocationRelativeTo(null);
+                        int returnVal = chooser.showOpenDialog(jf);
+                        // Upon clicking the approve button.
+                        if (returnVal == JFileChooser.APPROVE_OPTION) { 
+                           File file = new File(chooser.getSelectedFile().getPath());
+                           path = file.getPath();
+                        }
+                        if (returnVal == JFileChooser.CANCEL_OPTION) {
+                           path = "";
+                        }  
+                        display(path); 
+                        break;
                     case Message.WHOISIN:
                         writeMsg("List of the users currently on the server at " +
                         sdf.format(new Date()) + "\n");

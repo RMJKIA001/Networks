@@ -15,7 +15,7 @@ public class ChatAppClient {
     private Socket socket;
     private String server, username;
     private int port;
-
+    private ServerListener sl;
 
     // Constructor for client
     public ChatAppClient(String server, int port, String username){
@@ -36,7 +36,7 @@ public class ChatAppClient {
         }
         String msg = "Connection accepted " + socket.getInetAddress() + ": " + socket.getPort();
         display(msg);
-        msg = " - Use command 'WHOISIN' to find what other users are connected. \n - Use command 'LOGOUT' to logout of chat server";
+        msg = " - Use command 'WHOISIN' to find what other users are connected. \n - Use command 'PICTURE' to send a picture. \n - Use command 'LOGOUT' to logout of chat server. ";
         display(msg);
         // Create data streams
         try {
@@ -51,7 +51,8 @@ public class ChatAppClient {
         }
 
         // Create thread to listen from server
-        new ServerListener().start();
+        sl = new ServerListener();
+        sl.start();
         System.out.println("ServerListener started");
 
         // Send username to server as String
@@ -72,7 +73,11 @@ public class ChatAppClient {
     public void display(String msg){
         System.out.println(msg);
     }
+    public void endSL(){
+    //Ends the server Listener thread (Which caused the infinite loop)
+    sl.setT(false);}
     public void disconnect(){
+        
         try {
             if(sInput != null) sInput.close();
         }
@@ -85,7 +90,9 @@ public class ChatAppClient {
             if(socket != null) socket.close();
         }
         catch(Exception e) {} // not much else I can do
+        System.exit(0);      //a bit of a cheat but this stops any errors from showing
     }
+    //Send Message to server
     public void sendMessage(Message msg){
         try {
             sOutput.writeObject(msg);
@@ -134,9 +141,11 @@ public class ChatAppClient {
             // sends message to server that client wants to logout
             if (msg.equalsIgnoreCase("LOGOUT")){
                 client.sendMessage(new Message(Message.LOGOUT, ""));
+                client.endSL();
                 break;
             } else if (msg.equalsIgnoreCase("PICTURE")){
                 //TODO: send warning and picture to server
+                client.sendMessage(new Message(Message.PICTURE, ""));
             } else if (msg.equalsIgnoreCase(("WHOISIN"))){
                 client.sendMessage(new Message(Message.WHOISIN, ""));
             } else {
@@ -150,10 +159,9 @@ public class ChatAppClient {
 
     // Inner class that listens to new messages from the server
     class ServerListener extends Thread{
-
+        boolean t = true;
         public void run(){
-            while (true){
-
+            while (t){
                 try {
                     String msg = (String) sInput.readObject();
                     System.out.println(msg);
@@ -162,10 +170,13 @@ public class ChatAppClient {
                     display("Connection to server is closed");
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
+                    //display("I am the issue");
                     e.printStackTrace();
                 }
             }
         }
+        public void setT(boolean n){
+        t=n;}
     }
 }
 // FIRST ATTEMPT:
