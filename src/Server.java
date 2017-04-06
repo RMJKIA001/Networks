@@ -1,3 +1,6 @@
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,12 +9,6 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.io.File;
-import java.io.IOException;
-import java.awt.Point;
 
 /**
  * Created by Brigitte on 2017/04/02.
@@ -242,6 +239,8 @@ public class Server{
                     case Message.PICTURE:
                         //TODO: how to save and display picture
                         String path="";
+                        // BufferedImage bi = null;
+                        ImageIcon bi = null;
                         // Opens a file chooser window.
                         JFileChooser chooser = new JFileChooser();
                         // Creates a filter to allow only PNG and JPG images
@@ -253,7 +252,9 @@ public class Server{
                         // Upon clicking the approve button.
                         if (returnVal == JFileChooser.APPROVE_OPTION) { 
                            File file = new File(chooser.getSelectedFile().getPath());
-                           path = file.getPath();
+                            // bi = ImageIO.read(file);
+                            bi = new ImageIcon(file.getAbsolutePath());
+                            path = file.getPath();
                         }
                         if (returnVal == JFileChooser.CANCEL_OPTION) {
                            path = "";
@@ -271,6 +272,7 @@ public class Server{
                            ClientThread ct=clients.get(i);
                            if(!ct.username.equals(username)){
                            ct.pic=true;
+                               System.out.println(bi);
                               if(send(username,ct,path.substring(path.lastIndexOf("\\")+1))){
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
                               }
@@ -348,12 +350,18 @@ public class Server{
             try{
             
             writeMsg("Please Wait");
-            this.sleep(5000);
+            this.sleep(10000);
             ct.writeMsg("Please Wait");
             }catch(Exception e){display("Oh well");}
             String a=ct.message;
             if(a.equalsIgnoreCase("Accept")){
-               ct.writeMsg(msgPic+" accepted.\n"+msgPic+" is now removed from the server");                                   
+                /*
+                try {
+                    sOutput.writeObject(bfi);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
+                ct.writeMsg(msgPic+" accepted.\n"+msgPic+" is now removed from the server");
                ct.pic=false;
                return true; 
             }
