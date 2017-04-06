@@ -109,7 +109,7 @@ public class Server{
             ClientThread ct = clients.get(i);
             if (!(ct.username.equals(from))){
                 ct.writeMsg(bcmessage);
-                display(ct.username + " client disconnected");
+              //  display(ct.username + " client disconnected");
             }
         }
     }
@@ -172,6 +172,8 @@ public class Server{
         String username;
         Message msg;
         String date;
+        boolean pic;
+        String message;
 
         // Thread constructor
         public ClientThread(Socket socket){
@@ -179,10 +181,8 @@ public class Server{
             this.socket = socket;
 
             try {
-                //System.out.println("DEBUG: Creating data streams");
                 sOutput = new ObjectOutputStream((socket.getOutputStream()));
                 sInput = new ObjectInputStream(socket.getInputStream());
-                //System.out.println("DEBUG: Data stream created");
                 username = (String) sInput.readObject();
                 broadcast(username + " just connected.");//everyone should know
             } catch (IOException e) {
@@ -203,14 +203,18 @@ public class Server{
                     e.printStackTrace();
                     break;
                 } catch (ClassNotFoundException e) {
+                    display("Here");
                     e.printStackTrace();
                     break;
                 }
-                String message = msg.getMessage();
+                message = msg.getMessage();
 
                 switch (msg.getType()){
                     case Message.MESSAGE:
+                        if(!pic){
                         broadcastFrom(username + ": " + message,username);
+                        }
+                        
                         break;
                     case Message.LOGOUT:
                         broadcast(username + " disconnected from server"); //i think everyone needs to know when someone leaves
@@ -239,19 +243,40 @@ public class Server{
                         writeMsg("Send to all? (Y/N)");
                         Message m=null;
                         try{  m = (Message)sInput.readObject();}
-                        catch(Exception e){System.out.println("Hey");}
+                        catch(Exception e){e.printStackTrace();}
                         String s = m.getMessage();
-                        if(s.equalsIgnoreCase("Y")){broadcastFrom(username + " wants to send image: " + path.substring(path.lastIndexOf("\\")+1),username);}
+                        if(s.equalsIgnoreCase("Y"))
+                        {
+                           for (int i=0; i<clients.size();i++){
+                           ClientThread ct=clients.get(i);
+                           if(!ct.username.equals(username)){
+                           ct.pic=true;
+                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1))){
+                                 writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
+                              }
+                              else{
+                                 writeMsg(path.substring(path.lastIndexOf("\\")+1)+" NOT accepted by "+ct.username);
+                              }
+                           }
+                           }
+                          // broadcastFrom(username + " wants to send image: " + path.substring(path.lastIndexOf("\\")+1)+" (Accept/Decline)",username);
+                        }
                         else if(s.equalsIgnoreCase("N")){
                            writeMsg("Enter the username who you want to send it to: ");
                            Message m2=null;
                            try{  m2 = (Message)sInput.readObject();}
-                           catch(Exception e){System.out.println("Hey");}
+                           catch(Exception e){display("this"); e.printStackTrace();}
                            String s2 = m2.getMessage();
                            for (int i=0; i<clients.size();i++){
                             ClientThread ct = clients.get(i);
                             if(ct.username.equals(s2)){
-                            ct.writeMsg(username + "wants to send you the following picture: "+ path.substring(path.lastIndexOf("\\")+1));
+                              ct.pic=true;
+                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1))){
+                                 writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
+                              }
+                              else{
+                                 writeMsg(path.substring(path.lastIndexOf("\\")+1)+" NOT accepted by "+ct.username);
+                              }
                             }
                         }
                         }
@@ -282,7 +307,29 @@ public class Server{
             }
 
         }
-
+        private boolean send(String from,ClientThread ct,String msgPic){
+         boolean d=true;
+         do{
+            ct.writeMsg(from + " wants to send you the following picture: "+ msgPic + " (Accept/Decline)");
+            try{
+            ct.writeMsg("Please Wait");
+            writeMsg("Please Wait");
+            this.sleep(50000);}catch(Exception e){display("Oh well");}
+            String a=ct.message;
+            if(a.equalsIgnoreCase("Accept")){
+               ct.writeMsg(msgPic+" accepted.\n"+msgPic+" is now removed from the server");                                   
+               ct.pic=false;
+               return true; 
+            }
+            if(a.equalsIgnoreCase("Decline")){
+               ct.writeMsg(msgPic+" declined.\n"+msgPic+" is now removed from the server");
+               ct.pic=false;
+               return false;
+            }
+                              
+         }while(d);
+         return false;
+        }
         private boolean writeMsg(String msg){
             if (!socket.isConnected()){
                 close();
