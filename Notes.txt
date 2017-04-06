@@ -12,3 +12,10 @@ Things to do still:
 --- Can broadcast picture
 --- Or send to specific client
 - Rename methods
+- Tell clients when someone has left the chat
+
+
+RANDOM CHAT APP IDEAS:
+- Maybe store previous messages, that the client can request to see
+- Add a status
+- Ignore a user (different to kicking a user)

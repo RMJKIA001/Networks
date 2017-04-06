@@ -107,6 +107,16 @@ public class Server{
             }
         }
     }
+    public String getClientUserNames(){
+       // ArrayList<String> usernames = new ArrayList<>();
+        System.out.println("DEBUG: Getting client usernames");
+        String usernames = "";
+        for (ClientThread client : clients){
+           // usernames.add(client.username);
+            usernames = usernames + client.username + " ";
+        }
+        return usernames;
+    }
     public static void main(String args[]){
         // start server on generic port unless a port number is specified
         int portNumber = 1500;
@@ -155,6 +165,10 @@ public class Server{
                 sOutput = new ObjectOutputStream((socket.getOutputStream()));
                 sInput = new ObjectInputStream(socket.getInputStream());
                 //System.out.println("DEBUG: Data stream created");
+
+                // Send list of usernames to client:
+                writeMsg(getClientUserNames());
+
                 username = (String) sInput.readObject();
                 display(username + " just connected."); // Check if this doubles up
                 broadcast(username + " just connected.");
@@ -206,6 +220,7 @@ public class Server{
                             if (message.equalsIgnoreCase(clients.get(i).username)){
                                 broadcast(username + " has kicked " + message);
                                 remove(clients.get(i).id);
+                                clients.get(i).writeMsg("DISCONNECT");
                             } else {
                                 writeMsg("User cannot be found");
                             }
@@ -235,6 +250,7 @@ public class Server{
             }
             // write message to the stream
             try {
+                System.out.println("DEBUG: Trying to write message");
                 sOutput.writeObject(msg);
             } catch (IOException e) {
                 e.printStackTrace();
