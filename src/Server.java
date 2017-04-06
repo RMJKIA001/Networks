@@ -12,6 +12,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.IOException;
 import java.awt.Point;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 
 /**
  * Created by Brigitte on 2017/04/02.
@@ -23,6 +25,8 @@ public class Server{
     private static int uniqueID;
     // List of connected clients
     private ArrayList<ClientThread> clients;
+    
+    private ArrayList<Image> images;
     // So that we can display dates with our messages
     private SimpleDateFormat sdf;
     // port number that we listen for connection on
@@ -37,6 +41,7 @@ public class Server{
         this.port = port;
         sdf = new SimpleDateFormat("HH:mm:ss");
         clients = new ArrayList<ClientThread>();
+        images = new ArrayList<Image>();
     }
     ServerSocket serverSocket;
     public void start(){
@@ -184,6 +189,7 @@ public class Server{
         String date;
         boolean pic;
         String message;
+        Image i;
 
         // Thread constructor
         public ClientThread(Socket socket){
@@ -259,7 +265,8 @@ public class Server{
                            writeMsg("No file chosen. Try Again");
                            break;
                         }  
-                        
+                        Image img = new ImageIcon(path).getImage();
+                        images.add(img);
                         writeMsg("Send to all? (Y/N)");
                         //handles the input differently for this to interperate if thepic is being sent to all or not
                         Message m=null;
@@ -274,7 +281,7 @@ public class Server{
                            if(!ct.username.equals(username)){
                               //tells the reciever of the file that there is a file pending  
                               ct.pic=true;
-                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1),true)){
+                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1),true,img)){
 								
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
                               }
@@ -285,6 +292,7 @@ public class Server{
                            }
                            
                            }
+                           images.remove(img);
                           broadcast(path.substring(path.lastIndexOf("\\")+1)+" is now removed from the server");
                         
                         }
@@ -300,7 +308,7 @@ public class Server{
                               display(username+" is sending image: "+path.substring(path.lastIndexOf("\\")+1)+" to "+ct.username);
                               //tells the reciever of the file that there is a file pending  
                               ct.pic=true;
-                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1),false)){
+                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1),false,img)){
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
                               }
                               else{
@@ -308,8 +316,9 @@ public class Server{
                               }
                             }
                         }
+                        images.remove(img);
                         }
-                        else{writeMsg("Cannot understand input. Start process again");}
+                        else{writeMsg("Cannot understand input. Start process again");images.remove(img);}
                         break;
                     case Message.WHOISIN:
                         writeMsg("List of the users currently on the server at " +
@@ -365,7 +374,7 @@ public class Server{
         }
         /**
          * @param f - is whether it is being sent to all or not*/
-        private boolean send(String from,ClientThread ct,String msgPic,boolean f){
+        private boolean send(String from,ClientThread ct,String msgPic,boolean f,Image img){
          boolean d=true;
          do{
 			 //it only returns if "Accept" or "Decline" is typed in by the receiver
@@ -378,16 +387,17 @@ public class Server{
             }catch(Exception e){display("Oh well");}
             String a=ct.message;
             if(a.equalsIgnoreCase("Accept")){
-               ct.writeMsg(msgPic+" accepted.");                                   
+               ct.writeMsg(msgPic+" accepted."); 
+               ct.i = img;                                  
 			   if(!f)
-			   {ct.writeMsg(msgPic+" is now removed from the server");}
+			   {ct.writeMsg(msgPic+" is now removed from the server");images.remove(img);}
                ct.pic=false;
                return true; 
             }
             if(a.equalsIgnoreCase("Decline")){
                ct.writeMsg(msgPic+" declined.");
                if(!f)
-			   {ct.writeMsg(msgPic+" is now removed from the server");}
+			   {ct.writeMsg(msgPic+" is now removed from the server");images.remove(img);}
                ct.pic=false;
                return false;
             }
