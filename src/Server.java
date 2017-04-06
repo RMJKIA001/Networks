@@ -245,7 +245,7 @@ public class Server{
                         // Opens a file chooser window.
                         JFileChooser chooser = new JFileChooser();
                         // Creates a filter to allow only PNG and JPG images
-                        FileNameExtensionFilter filter = new FileNameExtensionFilter("JPG and PNG Images", "jpg", "png");
+                        FileNameExtensionFilter filter = new FileNameExtensionFilter("JPG and PNG and JPEG Images", "jpg", "png","jpeg");
                         chooser.setFileFilter(filter);//sets the filter
                         javax.swing.JFrame jf =new javax.swing.JFrame();
                         jf.setLocationRelativeTo(null);
@@ -256,10 +256,12 @@ public class Server{
                            path = file.getPath();
                         }
                         if (returnVal == JFileChooser.CANCEL_OPTION) {
-                           path = "";
+                           writeMsg("No file chosen. Try Again");
+                           break;
                         }  
-                        //
+                        
                         writeMsg("Send to all? (Y/N)");
+                        //handles the input differently for this to interperate if thepic is being sent to all or not
                         Message m=null;
                         try{  m = (Message)sInput.readObject();}
                         catch(Exception e){e.printStackTrace();}
@@ -270,16 +272,21 @@ public class Server{
                            for (int i=0; i<clients.size();i++){
                            ClientThread ct=clients.get(i);
                            if(!ct.username.equals(username)){
-                           ct.pic=true;
-                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1))){
+                              //tells the reciever of the file that there is a file pending  
+                              ct.pic=true;
+                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1),true)){
+								
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
                               }
                               else{
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" NOT accepted by "+ct.username);
                               }
+                              
                            }
+                           
                            }
-                          // broadcastFrom(username + " wants to send image: " + path.substring(path.lastIndexOf("\\")+1)+" (Accept/Decline)",username);
+                          broadcast(path.substring(path.lastIndexOf("\\")+1)+" is now removed from the server");
+                        
                         }
                         else if(s.equalsIgnoreCase("N")){
                            writeMsg("Enter the username who you want to send it to: ");
@@ -291,8 +298,9 @@ public class Server{
                             ClientThread ct = clients.get(i);
                             if(ct.username.equals(s2)){
                               display(username+" is sending image: "+path.substring(path.lastIndexOf("\\")+1)+" to "+ct.username);
+                              //tells the reciever of the file that there is a file pending  
                               ct.pic=true;
-                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1))){
+                              if(send(username,ct,path.substring(path.lastIndexOf("\\")+1),false)){
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
                               }
                               else{
@@ -302,7 +310,6 @@ public class Server{
                         }
                         }
                         else{writeMsg("Cannot understand input. Start process again");}
-                        // display(s + "\n" + path); 
                         break;
                     case Message.WHOISIN:
                         writeMsg("List of the users currently on the server at " +
@@ -317,14 +324,29 @@ public class Server{
                         for (int i=0; i<clients.size();i++){
                             if (message.equalsIgnoreCase(clients.get(i).username)){
                                 System.out.println("DEBUG: Kicked ID is " + clients.get(i).id + " Kicker is " + id);
+                                clients.get(i).writeMsg(username+" has kicked you off the server.");
                                 clients.get(i).writeMsg("DISCONNECT");
-                                remove(clients.get(i).id);
                                 broadcast(username + " has kicked " + message);
+                                remove(clients.get(i).id);
+                                broadcast(clients.get(i)+" disconnected from server");
                             } else {
                                 writeMsg("User cannot be found");
                             }
                         }
                         break;
+                     case Message.DM:
+                     //separates the username and the message
+						String us = message.substring(0,message.indexOf(" "));
+						String me = message.substring(message.indexOf(" ")+1);
+						for (int i=0; i<clients.size();i++){
+							ClientThread ct = clients.get(i);
+							if(ct.username.equals(us)){
+								ct.writeMsg(username+" has slid into your DMs: "+me);
+								display(username+" sent "+ct.username+ " a private message");
+								}
+							}
+						break;
+
                 }
             }
             // If here then client has logged out. So will remove client.
@@ -341,24 +363,31 @@ public class Server{
             }
 
         }
-        private boolean send(String from,ClientThread ct,String msgPic){
+        /**
+         * @param f - is whether it is being sent to all or not*/
+        private boolean send(String from,ClientThread ct,String msgPic,boolean f){
          boolean d=true;
          do{
+			 //it only returns if "Accept" or "Decline" is typed in by the receiver
             ct.writeMsg(from + " wants to send you the following picture: "+ msgPic + " (Accept/Decline)");
             try{
             
             writeMsg("Please Wait");
-            this.sleep(5000);
+            this.sleep(10000); //thread needs to sleep otherwise it doesn't process the input
             ct.writeMsg("Please Wait");
             }catch(Exception e){display("Oh well");}
             String a=ct.message;
             if(a.equalsIgnoreCase("Accept")){
-               ct.writeMsg(msgPic+" accepted.\n"+msgPic+" is now removed from the server");                                   
+               ct.writeMsg(msgPic+" accepted.");                                   
+			   if(!f)
+			   {ct.writeMsg(msgPic+" is now removed from the server");}
                ct.pic=false;
                return true; 
             }
             if(a.equalsIgnoreCase("Decline")){
-               ct.writeMsg(msgPic+" declined.\n"+msgPic+" is now removed from the server");
+               ct.writeMsg(msgPic+" declined.");
+               if(!f)
+			   {ct.writeMsg(msgPic+" is now removed from the server");}
                ct.pic=false;
                return false;
             }
