@@ -49,10 +49,6 @@ public class ChatAppClient {
             return false;
         }
 
-        // Create thread to listen from server
-        sl = new ServerListener();
-        sl.start();
-
         try {
             //System.out.println("DEBUG: About to get usernames");
             String usernames = (String) sInput.readObject();
@@ -69,6 +65,12 @@ public class ChatAppClient {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        // Create thread to listen from server
+        sl = new ServerListener();
+        sl.start();
+
+
 
         // Send username to server as String
         try {

@@ -8,14 +8,16 @@ https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
 Things to do still:
 - Check interface matches
 - Add kick functionality
-- Add picture stuff
---- Can broadcast picture
---- Or send to specific client
+- Add picture stuff - YES
+--- Can broadcast picture - YES
+--- Or send to specific client -YES
 - Rename methods
-- Tell clients when someone has left the chat
+- Tell clients when someone has left the chat- YES
+- Update the README
 
 
 RANDOM CHAT APP IDEAS:
 - Maybe store previous messages, that the client can request to see
 - Add a status
 - Ignore a user (different to kicking a user)
+- Send to a specific user
