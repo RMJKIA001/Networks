@@ -184,7 +184,9 @@ public class ChatAppClient {
             while (t){
                 try {
                     String msg = (String) sInput.readObject();
+                    // TODO: add later
                     if (msg.equalsIgnoreCase("DISCONNECT")){
+                        display("User disconnected");
                         disconnect();
                     } else {
                         System.out.println(msg);

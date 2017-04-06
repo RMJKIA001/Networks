@@ -137,7 +137,7 @@ public class Server{
     }
     public String getClientUserNames(){
        // ArrayList<String> usernames = new ArrayList<>();
-        System.out.println("DEBUG: Getting client usernames");
+       // System.out.println("DEBUG: Getting client usernames");
         String usernames = "";
         for (ClientThread client : clients){
            // usernames.add(client.username);
@@ -216,10 +216,11 @@ public class Server{
                 try {
                     msg = (Message) sInput.readObject();
                 } catch (IOException e) {
+                    display("I/O exception. Can't read message from client.");
                     e.printStackTrace();
                     break;
                 } catch (ClassNotFoundException e) {
-                    display("Here");
+                    display("ClassNotFoundException. Can't find the object");
                     e.printStackTrace();
                     break;
                 }
@@ -313,9 +314,10 @@ public class Server{
                         //TODO: KICK a client off
                         for (int i=0; i<clients.size();i++){
                             if (message.equalsIgnoreCase(clients.get(i).username)){
-                                broadcast(username + " has kicked " + message);
-                                remove(clients.get(i).id);
+                                System.out.println("DEBUG: Kicked ID is " + clients.get(i).id + " Kicker is " + id);
                                 clients.get(i).writeMsg("DISCONNECT");
+                                remove(clients.get(i).id);
+                                broadcast(username + " has kicked " + message);
                             } else {
                                 writeMsg("User cannot be found");
                             }
@@ -367,7 +369,7 @@ public class Server{
             }
             // write message to the stream
             try {
-                System.out.println("DEBUG: Trying to write message");
+                //System.out.println("DEBUG: Trying to write message");
                 sOutput.writeObject(msg);
             } catch (IOException e) {
                 e.printStackTrace();
