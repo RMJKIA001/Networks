@@ -266,6 +266,7 @@ public class Server{
                         String s = m.getMessage();
                         if(s.equalsIgnoreCase("Y"))
                         {
+                           display(username+" is sending image: "+path.substring(path.lastIndexOf("\\")+1)+" to everyone");
                            for (int i=0; i<clients.size();i++){
                            ClientThread ct=clients.get(i);
                            if(!ct.username.equals(username)){
@@ -289,6 +290,7 @@ public class Server{
                            for (int i=0; i<clients.size();i++){
                             ClientThread ct = clients.get(i);
                             if(ct.username.equals(s2)){
+                              display(username+" is sending image: "+path.substring(path.lastIndexOf("\\")+1)+" to "+ct.username);
                               ct.pic=true;
                               if(send(username,ct,path.substring(path.lastIndexOf("\\")+1))){
                                  writeMsg(path.substring(path.lastIndexOf("\\")+1)+" accepted by "+ct.username);  
@@ -344,9 +346,11 @@ public class Server{
          do{
             ct.writeMsg(from + " wants to send you the following picture: "+ msgPic + " (Accept/Decline)");
             try{
-            ct.writeMsg("Please Wait");
+            
             writeMsg("Please Wait");
-            this.sleep(5000);}catch(Exception e){display("Oh well");}
+            this.sleep(5000);
+            ct.writeMsg("Please Wait");
+            }catch(Exception e){display("Oh well");}
             String a=ct.message;
             if(a.equalsIgnoreCase("Accept")){
                ct.writeMsg(msgPic+" accepted.\n"+msgPic+" is now removed from the server");                                   
