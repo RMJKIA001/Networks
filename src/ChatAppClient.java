@@ -146,7 +146,11 @@ public class ChatAppClient {
                 client.sendMessage(new Message(Message.PICTURE, ""));
             } else if (msg.equalsIgnoreCase(("WHOISIN"))){
                 client.sendMessage(new Message(Message.WHOISIN, ""));
-            } else {
+            } else if (msg.startsWith(("KICK"))){
+                String kicked = msg.substring(5);
+                System.out.println("DEBUG: user to be kicked = " + kicked);
+                client.sendMessage(new Message(Message.KICK, kicked));
+            } else{
                 client.sendMessage(new Message(Message.MESSAGE, msg));
             }
         }

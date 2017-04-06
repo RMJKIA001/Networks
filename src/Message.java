@@ -14,7 +14,7 @@ public class Message implements Serializable{
 
     protected static final long serialVersionUID = 1112122200L;
 
-    static final int WHOISIN = 0, MESSAGE = 1, PICTURE = 2, LOGOUT = 3;
+    static final int WHOISIN = 0, MESSAGE = 1, PICTURE = 2, LOGOUT = 3, KICK = 4;
 
     private int type;
     private String message;

@@ -184,7 +184,9 @@ public class Server{
                 sOutput = new ObjectOutputStream((socket.getOutputStream()));
                 sInput = new ObjectInputStream(socket.getInputStream());
                 username = (String) sInput.readObject();
+
                 broadcast(username + " just connected.");//everyone should know
+
             } catch (IOException e) {
                 e.printStackTrace();
                 display("Exception in creating data streams " + e);
@@ -217,7 +219,9 @@ public class Server{
                         
                         break;
                     case Message.LOGOUT:
+
                         broadcast(username + " disconnected from server"); //i think everyone needs to know when someone leaves
+
                         on = false;
                         break;
                     case Message.PICTURE:
@@ -289,6 +293,17 @@ public class Server{
                         for (int i=0; i<clients.size();i++){
                             ClientThread ct = clients.get(i);
                             writeMsg((i+1) + ". " + ct.username + " since " + ct.date);
+                        }
+                        break;
+                    case Message.KICK:
+                        //TODO: KICK a client off
+                        for (int i=0; i<clients.size();i++){
+                            if (message.equalsIgnoreCase(clients.get(i).username)){
+                                broadcast(username + " has kicked " + message);
+                                remove(clients.get(i).id);
+                            } else {
+                                writeMsg("User cannot be found");
+                            }
                         }
                         break;
                 }

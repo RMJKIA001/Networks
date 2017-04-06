@@ -1,0 +1,14 @@
+Where most of the code comes from:
+http://www.dreamincode.net/forums/topic/259777-a-simple-chat-program-with-clientserver-gui-optional/
+
+File chooser tutorial:
+https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
+
+
+Things to do still:
+- Check interface matches
+- Add kick functionality
+- Add picture stuff
+--- Can broadcast picture
+--- Or send to specific client
+- Rename methods
