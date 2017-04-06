@@ -53,6 +53,23 @@ public class ChatAppClient {
         sl = new ServerListener();
         sl.start();
 
+        try {
+            //System.out.println("DEBUG: About to get usernames");
+            String usernames = (String) sInput.readObject();
+            System.out.println("Usernames being used at the moment are: " + usernames);
+            Scanner userscan = new Scanner(System.in);
+            while (usernames.contains(username)){
+                System.out.println("Could you please choose a new username. This one has been taken.");
+                System.out.print("New username: ");
+                username = userscan.nextLine();
+            }
+            System.out.println("Username has been accepted");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
         // Send username to server as String
         try {
             sOutput.writeObject(username);
@@ -120,6 +137,7 @@ public class ChatAppClient {
                         "[serverAddress]");
                 return;
         }
+
         // create the Client object
         ChatAppClient client = new ChatAppClient(serverAddress,portNumber,userName);
        // System.out.println("DEBUG: Client created");
@@ -166,8 +184,12 @@ public class ChatAppClient {
             while (t){
                 try {
                     String msg = (String) sInput.readObject();
-                    System.out.println(msg);
-                    System.out.print("> ");
+                    if (msg.equalsIgnoreCase("DISCONNECT")){
+                        disconnect();
+                    } else {
+                        System.out.println(msg);
+                        System.out.print("> ");
+                    }
                 } catch (IOException e) {
                     display("Connection to server is closed");
                     e.printStackTrace();

@@ -135,6 +135,16 @@ public class Server{
          
         }
     }
+    public String getClientUserNames(){
+       // ArrayList<String> usernames = new ArrayList<>();
+        System.out.println("DEBUG: Getting client usernames");
+        String usernames = "";
+        for (ClientThread client : clients){
+           // usernames.add(client.username);
+            usernames = usernames + client.username + " ";
+        }
+        return usernames;
+    }
     public static void main(String args[]){
         // start server on generic port unless a port number is specified
         int portNumber = 1500;
@@ -183,6 +193,10 @@ public class Server{
             try {
                 sOutput = new ObjectOutputStream((socket.getOutputStream()));
                 sInput = new ObjectInputStream(socket.getInputStream());
+
+                // Send list of usernames to client:
+                writeMsg(getClientUserNames());
+
                 username = (String) sInput.readObject();
 
                 broadcast(username + " just connected.");//everyone should know
@@ -301,6 +315,7 @@ public class Server{
                             if (message.equalsIgnoreCase(clients.get(i).username)){
                                 broadcast(username + " has kicked " + message);
                                 remove(clients.get(i).id);
+                                clients.get(i).writeMsg("DISCONNECT");
                             } else {
                                 writeMsg("User cannot be found");
                             }
@@ -329,7 +344,7 @@ public class Server{
             try{
             ct.writeMsg("Please Wait");
             writeMsg("Please Wait");
-            this.sleep(50000);}catch(Exception e){display("Oh well");}
+            this.sleep(5000);}catch(Exception e){display("Oh well");}
             String a=ct.message;
             if(a.equalsIgnoreCase("Accept")){
                ct.writeMsg(msgPic+" accepted.\n"+msgPic+" is now removed from the server");                                   
@@ -352,6 +367,7 @@ public class Server{
             }
             // write message to the stream
             try {
+                System.out.println("DEBUG: Trying to write message");
                 sOutput.writeObject(msg);
             } catch (IOException e) {
                 e.printStackTrace();
