@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,15 +10,6 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.io.File;
-import java.io.IOException;
-import java.awt.Point;
-import java.awt.Image;
-import javax.swing.ImageIcon;
 
 /**
  * Created by Brigitte on 2017/04/02.
