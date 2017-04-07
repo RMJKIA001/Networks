@@ -325,11 +325,11 @@ public class Server{
                         //TODO: KICK a client off
                         for (int i=0; i<clients.size();i++){
                             if (message.equalsIgnoreCase(clients.get(i).username)){
-                                System.out.println("DEBUG: Kicked ID is " + clients.get(i).id + " Kicker is " + id);
+                               // System.out.println("DEBUG: Kicked ID is " + clients.get(i).id + " Kicker is " + id);
                                 clients.get(i).writeMsg(username+" has kicked you off the server.");
                                 clients.get(i).writeMsg("DISCONNECT");
-                                broadcast(username + " has kicked " + message);
                                 remove(clients.get(i).id);
+                                broadcast(username + " has kicked " + message);
                                 broadcast(clients.get(i)+" disconnected from server");
                             } else {
                                 writeMsg("User cannot be found");

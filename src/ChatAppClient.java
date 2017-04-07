@@ -168,7 +168,7 @@ public class ChatAppClient {
                 client.sendMessage(new Message(Message.WHOISIN, ""));
             } else if (msg.startsWith(("KICK"))||msg.startsWith(("kick"))){
                 String kicked = msg.substring(5);
-                System.out.println("DEBUG: user to be kicked = " + kicked);
+               // System.out.println("DEBUG: user to be kicked = " + kicked);
                 client.sendMessage(new Message(Message.KICK, kicked));
             } else if(msg.startsWith(("DM"))||msg.startsWith(("dm"))){
 				//DM:Kiar 
