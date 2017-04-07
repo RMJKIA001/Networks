@@ -36,7 +36,7 @@ public class ChatAppClient {
         }
         String msg = "Connection accepted " + socket.getInetAddress() + ": " + socket.getPort();
         display(msg);
-        msg = " - Use command 'WHOISIN' to find what other users are connected. \n - Use command 'PICTURE' to send a picture. \n - Use command 'LOGOUT' to logout of chat server. ";
+        msg = " - Use command 'WHOISIN' to find what other users are connected. \n - Use command 'PICTURE' to send a picture. \n - Use command 'KICK [username]' to kick username off. \n - Use command 'DM:[username] [message]' to send a private message to [username].\n - Use command 'LOGOUT' to logout of chat server. ";
         display(msg);
         // Create data streams
         try {
@@ -166,11 +166,15 @@ public class ChatAppClient {
                 client.sendMessage(new Message(Message.PICTURE, ""));
             } else if (msg.equalsIgnoreCase(("WHOISIN"))){
                 client.sendMessage(new Message(Message.WHOISIN, ""));
-            } else if (msg.startsWith(("KICK"))){
+            } else if (msg.startsWith(("KICK"))||msg.startsWith(("kick"))){
                 String kicked = msg.substring(5);
                 System.out.println("DEBUG: user to be kicked = " + kicked);
                 client.sendMessage(new Message(Message.KICK, kicked));
-            } else{
+            } else if(msg.startsWith(("DM"))||msg.startsWith(("dm"))){
+				//DM:Kiar 
+				String who = msg.substring(3);
+				client.sendMessage(new Message(Message.DM, who));
+				} else{
                 client.sendMessage(new Message(Message.MESSAGE, msg));
             }
         }

@@ -14,6 +14,7 @@ Things to do still:
 - Rename methods
 - Tell clients when someone has left the chat- YES
 - Update the README
+- Update the introduction
 
 
 RANDOM CHAT APP IDEAS:
